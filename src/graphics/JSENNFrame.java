@@ -2,6 +2,8 @@ package graphics;
 
 import javax.swing.JFrame;
 
+import functions.Function;
+
 /**
  * JSENNFrame is the main class of JSENN; JSENNFrame contains the main
  * method used to drive the entire JSENN project; furthermore, it allows
@@ -10,7 +12,7 @@ import javax.swing.JFrame;
  * Copyright (C) 2022 Andrew Cupps, CC BY-SA
  * 
  * @author Andrew Cupps
- * @version 18 Dec 2022
+ * @version 19 Dec 2022
  */
 public class JSENNFrame extends JFrame {
 
@@ -20,12 +22,14 @@ public class JSENNFrame extends JFrame {
 	 * project.
 	 */
 	public JSENNFrame() {
+		
 		JSENNPanel panel = new JSENNPanel();
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.add(panel);
 		this.pack();
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
+		this.setTitle("JSENN");
 	}
 	
 	/**
