@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ import environment.Tile;
  * Copyright (C) 2022 Andrew Cupps, CC BY-SA
  * 
  * @author Andrew Cupps
- * @version 18 Dec 2022
+ * @version 19 Dec 2022
  */
 public class JSENNPanel extends JPanel implements ActionListener {
 	
@@ -41,7 +42,10 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 */
 	private static final int UPDATE_RATE = 60;
 	
-	private static final int TILE_SIZE = 40;
+	/**
+	 * Size of tiles in pixels
+	 */
+	private static final int TILE_SIZE = 10;
 	
 	/**
 	 * The set of all tiles that will be used in this simulation; size is 
@@ -59,8 +63,8 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 * SEED double is randomly generated for each simulation;
 	 * SCALING_FACTOR is used to scale the noise.
 	 */
-	private static final long SEED = (long) Math.random() * 1000000000;
-	private static final double SCALING_FACTOR = 0.01;
+	private static final long SEED = (long) (Math.random() * 10000000);
+	private static final double SCALING_FACTOR = 0.03;
 	static {
 		double i = 0.01, j = 0.01;
 		for (int xIndex = 0; xIndex < NUM_TILES_X; xIndex++) {
@@ -69,6 +73,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 				tiles[xIndex][yIndex] = new Tile(noiseValue);
 				j += SCALING_FACTOR;
 			}
+			j = 0.01;
 			i += SCALING_FACTOR;
 		}
 	}
@@ -85,7 +90,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 * of a Creature.
 	 */
 	private static final int CHUNK_SIZE = 
-			5 * (int) Creature.getCreatureSizeLimit();
+			3 * (int) Creature.getCreatureSizeLimit();
 	private static final int NUM_CHUNKS_X = NUM_TILES_X / CHUNK_SIZE,
 							 NUM_CHUNKS_Y = NUM_TILES_Y / CHUNK_SIZE;
 	private static Collection<?>[][] creatures = 
@@ -140,5 +145,14 @@ public class JSENNPanel extends JPanel implements ActionListener {
 		 * Drawing all creatures
 		 */
 		////NOT IMPLEMENTED YET.
+	}
+	
+	/**
+	 * Updating all elements and graphics
+	 */
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		
+		repaint();
 	}
 }
