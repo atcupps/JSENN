@@ -14,7 +14,7 @@ public class Function {
 	/**
 	 * Takes in a value input and returns a value between zero and one,
 	 * where the limit as the value approaches negative infinity is zero and
-	 * the limit 
+	 * the limit as the value approaches infinity is one.
 	 * 
 	 * @param value - the value to be input into the sigmoid function
 	 * @param xScale - the amount the function should be stretched horizontally
