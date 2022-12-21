@@ -9,10 +9,10 @@ import functions.Function;
  * method used to drive the entire JSENN project; furthermore, it allows
  * for creation, update, and graphical representation of all JSENN objects.
  * 
- * Copyright (C) 2022 Andrew Cupps, CC BY-SA
+ * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 19 Dec 2022
+ * @version 21 Dec 2022
  */
 public class JSENNFrame extends JFrame {
 
