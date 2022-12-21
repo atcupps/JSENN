@@ -6,7 +6,7 @@ package neural;
  * in the next layer of the Network; it also contains all the methods to input
  * and get data from the Network.
  * 
- * Copyright (C) 2022 Andrew Cupps, CC BY-SA
+ * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
  * 20 Dec 2022
