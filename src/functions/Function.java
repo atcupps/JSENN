@@ -4,10 +4,10 @@ package functions;
  * The Function class contains many mathematical operations useful for this
  * project.
  * 
- * Copyright (C) 2022 Andrew Cupps, CC BY-SA
+ * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 19 Dec 2022
+ * @version 21 Dec 2022
  */
 public class Function {
 
