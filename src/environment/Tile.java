@@ -10,10 +10,10 @@ import functions.Function;
  * tile nutrition value is also calculated; from the combination of these, 
  * Tile color is calculated.
  * 
- * Copyright (C) 2022 Andrew Cupps, CC BY-SA
+ * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 19 Dec 2022
+ * @version 21 Dec 2022
  */
 public class Tile {
 
@@ -27,8 +27,8 @@ public class Tile {
 	 * water tiles; all Tiles with post-sigmoid elevation above MOUNTAIN_ELEVATION
 	 * will be mountain tiles.
 	 */
-	private static final double	WATER_ELEVATION = 0.2189,
-								MOUNTAIN_ELEVATION = 0.8;
+	private static final double	WATER_ELEVATION = 0.2789,
+								MOUNTAIN_ELEVATION = 0.9;
 	
 	/**
 	 * Amount of energy per update required for Creatures to stay in a Tile.
@@ -39,17 +39,20 @@ public class Tile {
 	
 	/**
 	 * Maximum base nutrition of a soil tile, and the rate at which base
-	 * nutrition decreases with elevation
+	 * nutrition decreases with elevation, as well as the maximum nutrition
+	 * any tile can have, and the rate that nutrition naturally increases.
 	 */
 	private static final double SOIL_MAX_BASE_NUTRITION = 1000;
 	private static final double SOIL_NUTRITION_RATE = 250;
+	private static final double MAX_NUTRITION = 1000;
+	private static final double NUTRITION_INCREASE_RATE = 2;
 	
 	/**
 	 * Inputs for the Function.sigmoid(...) function used to process elevation.
 	 */
 	private static final double SIGMOID_SHIFT_X = 1.0, 
 								SIGMOID_SHIFT_Y = 0.0, 
-								SIGMOID_SCALE_X = 1.0,
+								SIGMOID_SCALE_X = 2.0,
 								SIGMOID_SCALE_Y = 1.0;
 	
 	/**
@@ -111,16 +114,37 @@ public class Tile {
 			baseNutrition = (float) (SOIL_MAX_BASE_NUTRITION - SOIL_NUTRITION_RATE * elevation);
 			nutrition = baseNutrition;
 			energyUse = (float) SOIL_ENERGY_USE_RATE;
-			baseRed = 16 + (200 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) 
+			baseRed = 16 + (170 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) 
 					* (float) (elevation - WATER_ELEVATION);
-			baseGreen = 82 + (100 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION))
+			baseGreen = 82 + (130 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION))
 					* (float) (elevation - WATER_ELEVATION);
-			baseBlue = 0 + (200 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION))
+			baseBlue = 0 + (170 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION))
 					* (float) (elevation - WATER_ELEVATION);
 			red = (int) baseRed;
 			green = (int) baseGreen;
 			blue = (int) baseBlue;
 		}
+	}
+	
+	/**
+	 * Updates the color and nutritional value of the Tile.
+	 */
+	public void update() {
+		
+		if (tileType == TileType.SOIL) {
+			/*
+			 * Updating nutrition
+			 */
+			nutrition = (float) Math.min(baseNutrition, nutrition + NUTRITION_INCREASE_RATE);
+		}
+		
+		/*
+		 * Updating colors
+		 */
+		float nutritionDifference = nutrition - baseNutrition;
+		red = (int) (baseRed + (1700 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) * nutritionDifference);
+		green = (int) (baseGreen + (1700 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) * nutritionDifference);
+		blue = (int) (baseBlue + (1700 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) * nutritionDifference);
 	}
 	
 	public enum TileType {
