@@ -8,10 +8,10 @@ import java.util.Iterator;
  * The size of the layer is predetermined and given in the constructor
  * parameters.
  * 
- * Copyright (C) 2022 Andrew Cupps, CC BY-SA
+ * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 20 Dec 2022
+ * @version 21 Dec 2022
  */
 public class Layer {
 
