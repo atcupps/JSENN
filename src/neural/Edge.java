@@ -7,10 +7,10 @@ import functions.Function;
  * edge in the next field, as well as the weight and bias of the Edge; Edges
  * also transfer data through sigmoid processing between Nodes.
  * 
- * Copyright (C) 2022 Andrew Cupps, CC BY-SA
+ * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 20 Dec 2022
+ * @version 21 Dec 2022
  */
 public class Edge {
 
