@@ -60,6 +60,33 @@ public class Network {
 	}
 	
 	/**
+	 * Constructor used to create a new Network by copying all data of a
+	 * different Network with slight variations to Node defaultData and 
+	 * Edge weights and biases with maxVariance as the maximum size of 
+	 * variations. Similar to a copy constructor, but all Network data is 
+	 * slightly changed. This is used for genetic algorithm network inheritance.
+	 * This could be used as a copy constructor if the maxVariance field is 0.0.
+	 * @param toInherit - the Network to be inherited
+	 * @param maxVariance - the maximum variance of data from the original
+	 * Network data (so, the new data will be equal to the old data plus or 
+	 * minus maxVariance).
+	 */
+	public Network(Network toInherit, double maxVariance) {
+		if (toInherit == null) {
+			throw new IllegalArgumentException("Network cannot inherit from a null Network.");
+		}
+		
+		this.numLayers = toInherit.numLayers;
+		layers = new Layer[numLayers];
+		
+		layers[numLayers - 1] = new Layer(toInherit.layers[numLayers - 1], maxVariance);
+		
+		for (int i = numLayers - 2; i >= 0; i++) {
+			layers[i] = new Layer(toInherit.layers[i], layers[i+1], maxVariance);
+		}
+	}
+	
+	/**
 	 * Returns the input Layer of the Network.
 	 * @return Network.layers[0]
 	 */
@@ -82,5 +109,27 @@ public class Network {
 	 */
 	public Layer getSpecifiedLayer(int layerNumber) {
 		return layers[layerNumber];
+	}
+	
+	/**
+	 * Resets all Nodes in the network to have their default data values.
+	 */
+	public void resetNetwork() {
+		for (Layer l : layers) {
+			l.resetLayer();
+		}
+	}
+	
+	/**
+	 * Calls all Layers except the output layer to transfer data between Nodes.
+	 * If a layer unexpectedly returns false when transferData is called, this
+	 * method will throw a NeuralNetworkException.
+	 */
+	public void transferData() {
+		for (int i = 0; i < layers.length - 1; i++) {
+			if (!layers[i].transferData()) {
+				throw new NeuralNetworkException("Layer.transferData() called on an output Layer.");
+			}
+		}
 	}
 }
