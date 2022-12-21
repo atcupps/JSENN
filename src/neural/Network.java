@@ -24,6 +24,7 @@ public class Network {
 	private Layer[] layers;
 	
 	/**
+	 * Default constructor for a new Network (so, not inherited from another.)
 	 * Creates the current network with numLayers amount of layers, where
 	 * each layer has a corresponding value in layerSizes representing the
 	 * number of Nodes in that layer. For example, if layerSizes[0] = 8, then
@@ -49,13 +50,14 @@ public class Network {
 		layers = new Layer[numLayers];
 		
 		layers[numLayers - 1] = new Layer(layerSizes[numLayers - 1]);
-		
-		for (int i = numLayers - 2; i >= 0; i++) {
+		for (int i = numLayers - 2; i >= 0; i--) {
 			if (layerSizes[i] < 1) {
 				throw new IllegalArgumentException("Layer Sizes must be at least one.");
 			}
 			
-			layers[i] = new Layer(layerSizes[i], layers[i+1]);
+			layers[i] = 
+					new Layer(layerSizes[i], 
+							layers[i+1]);
 		}
 	}
 	
