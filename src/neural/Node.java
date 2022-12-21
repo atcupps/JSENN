@@ -1,7 +1,7 @@
 package neural;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * The Node object is the base unit of the Network; Nodes contain data
@@ -15,15 +15,15 @@ import java.util.Collection;
 public class Node {
 	
 	/*
-	 * The data stored in the current Node.
+	 * The current value of the data stored in the Node, and the default value.
 	 */
-	private double data;
+	private double curData, defaultData;
 	
 	/*
-	 * A collection of all the edges between the current Node and all Nodes
+	 * A list of all the edges between the current Node and all Nodes
 	 * of the next Layer in the Network.
 	 */
-	private Collection<Edge> edges;
+	private List<Edge> edges;
 	
 	/*
 	 * The name of the current Node object; used for individual Node identification
@@ -31,11 +31,44 @@ public class Node {
 	private String name;
 	
 	/**
-	 * The default constructor for a new Node; by default, Nodes have random
-	 * data from -1 to 1, no Edges, and no name.
+	 * The default constructor for a new Node; by default, Nodes have data
+	 * of 0.0 and no edges or name.
 	 */
 	public Node() {
-		data = Math.random() * 2 - 1;
+		defaultData = 0;
+		curData = defaultData;
+	}
+	
+	/**
+	 * Constructor for genetically inheriting an output Node; data from the
+	 * parameter Node is copied with variation of maximum plus or minus maxVariance.
+	 * @param toInherit - the Node to be inherited
+	 * @param maxVariance - the maximum variance of inherited Node data
+	 */
+	public Node(Node toInherit, double maxVariance) {
+		defaultData = toInherit.defaultData + Math.random() * maxVariance * 2 - maxVariance;
+		curData = defaultData;
+		name = toInherit.name;
+	}
+	
+	/**
+	 * Constructor for genetically inheriting a non-output Node; data from
+	 * the parameter Node is copied with variation of maximum plus or minus
+	 * maxVariance.
+	 * @param toInherit - the Node to be inherited
+	 * @param nextNodes - the Nodes of the next Layer
+	 * @param maxVariance - the maximum variance of inherited Node data
+	 */
+	public Node(Node toInherit, Node[] nextNodes, double maxVariance) {
+		defaultData = toInherit.defaultData + Math.random() * maxVariance * 2 - maxVariance;
+		curData = defaultData;
+		name = toInherit.name;
+		
+		edges = new ArrayList<Edge>();
+		
+		for (int i = 0; i < nextNodes.length; i++) {
+			edges.add(new Edge(nextNodes[i], toInherit.edges.get(i), maxVariance));
+		}
 	}
 	
 	/**
@@ -78,5 +111,30 @@ public class Node {
 		}
 		
 		return this.name.equals(name);
+	}
+	
+	/**
+	 * Resets the value of curData to defaultData
+	 */
+	public void resetData() {
+		curData = defaultData;
+	}
+	
+	/**
+	 * Adds the given parameter data to curData.
+	 * @param data - the data to be added
+	 */
+	public void addData(double data) {
+		curData += data;
+	}
+	
+	/**
+	 * Calls addData on all of the current Node's Edges with curData as 
+	 * the method parameter.
+	 */
+	public void transferData() {
+		for (Edge e : edges) {
+			e.addData(curData);
+		}
 	}
 }
