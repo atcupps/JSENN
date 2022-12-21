@@ -21,10 +21,10 @@ import environment.Tile;
  * and ActionListener, JSENNPanel also updates all Creatures and environment
  * objects.
  * 
- * Copyright (C) 2022 Andrew Cupps, CC BY-SA
+ * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 19 Dec 2022
+ * @version 21 Dec 2022
  */
 public class JSENNPanel extends JPanel implements ActionListener {
 	
@@ -70,7 +70,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 		for (int xIndex = 0; xIndex < NUM_TILES_X; xIndex++) {
 			for (int yIndex = 0; yIndex < NUM_TILES_Y; yIndex++) {
 				float noiseValue = OpenSimplex2S.noise2(SEED, i, j);
-				tiles[xIndex][yIndex] = new Tile(noiseValue);
+				tiles[xIndex][yIndex] = new Tile(noiseValue + 0.5);
 				j += SCALING_FACTOR;
 			}
 			j = 0.01;
