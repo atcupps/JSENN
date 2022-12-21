@@ -1,13 +1,14 @@
 package graphics;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -36,7 +37,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	/**
 	 * Screen size dimensions in pixels.
 	 */
-	private static final int SIZE_X = 1920, SIZE_Y = 1080;
+	public static final int SIZE_X = 1920, SIZE_Y = 1080;
 	/**
 	 * Number of times per second objects should be updated.
 	 */
@@ -54,8 +55,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 */
 	private static final int NUM_TILES_X = SIZE_X / TILE_SIZE,
 							 NUM_TILES_Y = SIZE_Y / TILE_SIZE;
-	private static Tile[][] tiles = 
-			new Tile[NUM_TILES_X][NUM_TILES_Y];
+	private Tile[][] tiles = new Tile[NUM_TILES_X][NUM_TILES_Y];
 	
 	/*
 	 * Assigning each index of the 2D tiles array to be a tile with elevation
@@ -63,9 +63,9 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 * SEED double is randomly generated for each simulation;
 	 * SCALING_FACTOR is used to scale the noise.
 	 */
-	private static final long SEED = (long) (Math.random() * 10000000);
+	private final long SEED = (long) (Math.random() * 10000000);
 	private static final double SCALING_FACTOR = 0.03;
-	static {
+	{
 		double i = 0.01, j = 0.01;
 		for (int xIndex = 0; xIndex < NUM_TILES_X; xIndex++) {
 			for (int yIndex = 0; yIndex < NUM_TILES_Y; yIndex++) {
@@ -80,6 +80,8 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	
 	
 	/**
+	 * NOTE: CHUNK IMPLEMENTATION OF CREATURES NOT CURRENTLY USED (21 Dec 2022)
+	 * 
 	 * A 2D array of Collections which contains all the Creature objects in
 	 * the simulation; this 2D array represents subsections of the tile grid
 	 * used for the environment, where each chunk represents a certain area
@@ -89,22 +91,37 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 * maximum size limit for Creatures, being 5 times the maximum radius
 	 * of a Creature.
 	 */
-	private static final int CHUNK_SIZE = 
-			3 * (int) Creature.getCreatureSizeLimit();
-	private static final int NUM_CHUNKS_X = NUM_TILES_X / CHUNK_SIZE,
-							 NUM_CHUNKS_Y = NUM_TILES_Y / CHUNK_SIZE;
-	private static Collection<?>[][] creatures = 
-			new Collection<?>[NUM_CHUNKS_X][NUM_CHUNKS_Y];
-	
+//	private static final int CHUNK_SIZE = 
+//			3 * (int) Math.ceil(Creature.getCreatureSizeMax());
+//	private static final int NUM_CHUNKS_X = NUM_TILES_X / CHUNK_SIZE,
+//							 NUM_CHUNKS_Y = NUM_TILES_Y / CHUNK_SIZE;
+//	private static Collection<Creature>[][] creatures = 
+//			new Collection<Creature>[NUM_CHUNKS_X][NUM_CHUNKS_Y];
+//	
 	/*
+	 * NOTE: CHUNK IMPLEMENTATION OF CREATURES NOT CURRENTLY USED (21 Dec 2022)
+	 * 
 	 * Assigning each index in the 2D creatures array to be a HashSet of
 	 * Creatures.
 	 */
-	static {
-		for (int i = 0; i < NUM_CHUNKS_X; i++) {
-			for (int j = 0; j < NUM_CHUNKS_Y; j++) {
-				creatures[i][j] = new HashSet<Creature>();
-			}
+//	static {
+//		for (int i = 0; i < NUM_CHUNKS_X; i++) {
+//			for (int j = 0; j < NUM_CHUNKS_Y; j++) {
+//				creatures[i][j] = new HashSet<Creature>();
+//			}
+//		}
+//	}
+//	
+	
+	/*
+	 * AS OF VERSION 21 DEC 2022:
+	 * 
+	 * Creatures are stored in a single Collection of all Creatures.
+	 */
+	private Collection<Creature> creatures = new ArrayList<Creature>();
+	{
+		for (int i = 0; i < 60; i++) {
+			creatures.add(new Creature());
 		}
 	}
 	
@@ -144,7 +161,16 @@ public class JSENNPanel extends JPanel implements ActionListener {
 		/*
 		 * Drawing all creatures
 		 */
-		////NOT IMPLEMENTED YET.
+		for (Creature c : creatures) {
+			g.setPaint(c.getCreatureColor());
+			int size = (int) c.getSize();
+			int x = (int) c.getX();
+			int y = (int) c.getY();
+			g.fillOval(x - size, y - size, size * 2, size * 2);
+			g.setPaint(new Color(0,0,0));
+			g.setStroke(new BasicStroke(2));
+			g.drawOval(x - size - 1, y - size - 1, size * 2 + 2, size * 2 + 2);
+		}
 	}
 	
 	/**
