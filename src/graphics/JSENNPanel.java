@@ -8,7 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -55,7 +55,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 */
 	private static final int NUM_TILES_X = SIZE_X / TILE_SIZE,
 							 NUM_TILES_Y = SIZE_Y / TILE_SIZE;
-	private Tile[][] tiles = new Tile[NUM_TILES_X][NUM_TILES_Y];
+	private static Tile[][] tiles = new Tile[NUM_TILES_X][NUM_TILES_Y];
 	
 	/*
 	 * Assigning each index of the 2D tiles array to be a tile with elevation
@@ -118,7 +118,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 * 
 	 * Creatures are stored in a single Collection of all Creatures.
 	 */
-	private Collection<Creature> creatures = new ArrayList<Creature>();
+	private static List<Creature> creatures = new ArrayList<Creature>();
 	{
 		for (int i = 0; i < 60; i++) {
 			creatures.add(new Creature());
@@ -179,6 +179,43 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
+		/*
+		 * Updating all creatures, and removing some if necessary
+		 */
+		int numCreatures = creatures.size();
+		for (int i = 0; i < numCreatures; i++) {
+			if (!creatures.get(i).update()) {
+				creatures.remove(i--);
+				numCreatures--;
+			}
+		}
+		
+		/*
+		 * Updating all Tiles
+		 */
+		for (int i = 0; i < NUM_TILES_X; i++) {
+			for (int j = 0; j < NUM_TILES_Y; j++) {
+				tiles[i][j].update();
+			}
+		}
+		
+		while (creatures.size() < 60) {
+			creatures.add(new Creature());
+		}
+		
+		
 		repaint();
+	}
+	
+	public static double getTileEnergyRate(double x, double y) {
+		return tiles[(int) x / TILE_SIZE][(int) y / TILE_SIZE].getTileEnergyRate();
+	}
+	
+	public static double eat(double x, double y) {
+		return tiles[(int) x / TILE_SIZE][(int) y / TILE_SIZE].eat();
+	}
+	
+	public static Color getTileColor(double x, double y) {
+		return tiles[(int) x / TILE_SIZE][(int) y / TILE_SIZE].getTileColor();
 	}
 }
