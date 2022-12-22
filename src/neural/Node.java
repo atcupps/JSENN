@@ -129,6 +129,16 @@ public class Node {
 	}
 	
 	/**
+	 * Sets both the current data and default data of this Node to the 
+	 * parameter data.
+	 * @param data the data to be set as this Node's data
+	 */
+	public void setData(double data) {
+		curData = data;
+		defaultData = data;
+	}
+	
+	/**
 	 * Calls addData on all of the current Node's Edges with curData as 
 	 * the method parameter.
 	 */
@@ -137,4 +147,6 @@ public class Node {
 			e.addData(curData);
 		}
 	}
+	
+	public double getData() { return curData; }
 }
