@@ -31,7 +31,8 @@ public class Tile {
 								MOUNTAIN_ELEVATION = 0.9;
 	
 	/**
-	 * Amount of energy per update required for Creatures to stay in a Tile.
+	 * Amount of energy per update required for Creatures to move one pixel
+	 * through a given tile.
 	 */
 	private static final double WATER_ENERGY_USE_RATE = 1.0,
 								MOUNTAIN_ENERGY_USE_RATE = 0.8,
@@ -45,7 +46,7 @@ public class Tile {
 	private static final double SOIL_MAX_BASE_NUTRITION = 1000;
 	private static final double SOIL_NUTRITION_RATE = 250;
 	private static final double MAX_NUTRITION = 1000;
-	private static final double NUTRITION_INCREASE_RATE = 2;
+	private static final double NUTRITION_INCREASE_RATE = 1.5;
 	
 	/**
 	 * Inputs for the Function.sigmoid(...) function used to process elevation.
@@ -142,9 +143,13 @@ public class Tile {
 		 * Updating colors
 		 */
 		float nutritionDifference = nutrition - baseNutrition;
-		red = (int) (baseRed + (1700 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) * nutritionDifference);
-		green = (int) (baseGreen + (1700 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) * nutritionDifference);
-		blue = (int) (baseBlue + (1700 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) * nutritionDifference);
+		red = (int) (baseRed + 0.05 * nutritionDifference);
+		green = (int) (baseGreen + 0.05 * nutritionDifference);
+		blue = (int) (baseBlue + 0.05 * nutritionDifference);
+		
+		red = Math.max(red, 0);
+		green = Math.max(green, 0);
+		blue = Math.max(blue, 0);
 	}
 	
 	public enum TileType {
@@ -163,6 +168,13 @@ public class Tile {
 		}
 		
 		return null;
+	}
+	
+	public double getTileEnergyRate() { return energyUse; }
+	
+	public double eat() {
+		nutrition /= 2;
+		return nutrition;
 	}
 	
 	//public Color getTileColor() { return new Color(red, green, blue); }
