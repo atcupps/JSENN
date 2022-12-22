@@ -1,184 +1,296 @@
-package graphics;
+package creatures;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
 
-import javax.swing.JPanel;
-import javax.swing.Timer;
-
-import creatures.Creature;
-import environment.Tile;
+import functions.Function;
+import graphics.JSENNPanel;
+import neural.Layer;
+import neural.Network;
 
 /**
- * The JSENNPanel allows for graphical representation of all environment
- * objects and Creature objects in the JSENN simulation. Using a timer
- * and ActionListener, JSENNPanel also updates all Creatures and environment
- * objects.
+ * Creatures are the most important part of the JSENN program; Creatures are
+ * controlled by neural networks; elements of these networks as well as fields
+ * within Creatures are inherited with slight variations whenever Creatures
+ * reproduce. The goal of the entire simulation is to see how natural
+ * selection and interactions between Creatures, the environment, and other
+ * Creatures influences long-term trends in the evolution of various 
+ * traits in Creatures and their neural networks.
  * 
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
  * @version 21 Dec 2022
  */
-public class JSENNPanel extends JPanel implements ActionListener {
-	
-	/**
-	 * Timer used for updating all objects necessary to update.
-	 */
-	private static Timer timer;
-	
-	/**
-	 * Screen size dimensions in pixels.
-	 */
-	public static final int SIZE_X = 1920, SIZE_Y = 1080;
-	/**
-	 * Number of times per second objects should be updated.
-	 */
-	private static final int UPDATE_RATE = 60;
-	
-	/**
-	 * Size of tiles in pixels
-	 */
-	private static final int TILE_SIZE = 10;
-	
-	/**
-	 * The set of all tiles that will be used in this simulation; size is 
-	 * based on NUM_TILES_X and NUM_TILES_Y, which are based on the size of the
-	 * screen divided by the size of size of a tile.
-	 */
-	private static final int NUM_TILES_X = SIZE_X / TILE_SIZE,
-							 NUM_TILES_Y = SIZE_Y / TILE_SIZE;
-	private Tile[][] tiles = new Tile[NUM_TILES_X][NUM_TILES_Y];
+public class Creature {
 	
 	/*
-	 * Assigning each index of the 2D tiles array to be a tile with elevation
-	 * values according to KdotJPG's OpenSimplex2 noise generator. The 
-	 * SEED double is randomly generated for each simulation;
-	 * SCALING_FACTOR is used to scale the noise.
+	 * Maximum maximum radius of any Creature in pixels
 	 */
-	private final long SEED = (long) (Math.random() * 10000000);
-	private static final double SCALING_FACTOR = 0.03;
-	{
-		double i = 0.01, j = 0.01;
-		for (int xIndex = 0; xIndex < NUM_TILES_X; xIndex++) {
-			for (int yIndex = 0; yIndex < NUM_TILES_Y; yIndex++) {
-				float noiseValue = OpenSimplex2S.noise2(SEED, i, j);
-				tiles[xIndex][yIndex] = new Tile(noiseValue + 0.5);
-				j += SCALING_FACTOR;
-			}
-			j = 0.01;
-			i += SCALING_FACTOR;
-		}
-	}
-	
-	
-	/**
-	 * NOTE: CHUNK IMPLEMENTATION OF CREATURES NOT CURRENTLY USED (21 Dec 2022)
-	 * 
-	 * A 2D array of Collections which contains all the Creature objects in
-	 * the simulation; this 2D array represents subsections of the tile grid
-	 * used for the environment, where each chunk represents a certain area
-	 * of the simulation in order to allow searches for Creatures to be done
-	 * more efficiently in situations where creatures are searched for in
-	 * a given radius or location. The size of chunks is dependent on the
-	 * maximum size limit for Creatures, being 5 times the maximum radius
-	 * of a Creature.
-	 */
-//	private static final int CHUNK_SIZE = 
-//			3 * (int) Math.ceil(Creature.getCreatureSizeMax());
-//	private static final int NUM_CHUNKS_X = NUM_TILES_X / CHUNK_SIZE,
-//							 NUM_CHUNKS_Y = NUM_TILES_Y / CHUNK_SIZE;
-//	private static Collection<Creature>[][] creatures = 
-//			new Collection<Creature>[NUM_CHUNKS_X][NUM_CHUNKS_Y];
-//	
-	/*
-	 * NOTE: CHUNK IMPLEMENTATION OF CREATURES NOT CURRENTLY USED (21 Dec 2022)
-	 * 
-	 * Assigning each index in the 2D creatures array to be a HashSet of
-	 * Creatures.
-	 */
-//	static {
-//		for (int i = 0; i < NUM_CHUNKS_X; i++) {
-//			for (int j = 0; j < NUM_CHUNKS_Y; j++) {
-//				creatures[i][j] = new HashSet<Creature>();
-//			}
-//		}
-//	}
-//	
+	private static final double CREATURE_SIZE_MAX = 10;
 	
 	/*
-	 * AS OF VERSION 21 DEC 2022:
-	 * 
-	 * Creatures are stored in a single Collection of all Creatures.
+	 * Minimum radius of any Creature in pixels
 	 */
-	private Collection<Creature> creatures = new ArrayList<Creature>();
-	{
-		for (int i = 0; i < 60; i++) {
-			creatures.add(new Creature());
-		}
-	}
+	private static final double CREATURE_SIZE_MIN = 4;
+	
+	/*
+	 * Maximum maxHealth of any Creature
+	 */
+	private static final double CREATURE_MAXHEALTH_MAX = 100;
+	
+	/*
+	 * Minimum maxHealth of any Creature
+	 */
+	private static final double CREATURE_MAXHEALTH_MIN = 40;
+	
+	/*
+	 * Maximum Attack damage of any Creature
+	 */
+	private static final double CREATURE_ATTACK_MAX = 50;
+	
+	/*
+	 * Minimum Attack damage of any Creature
+	 */
+	private static final double CREATURE_ATTACK_MIN = 0;
+	
+	/*
+	 * Maximum Defense damage of any Creature
+	 */
+	private static final double CREATURE_DEFENSE_MAX = 50;
+	
+	/*
+	 * Minimum Defense damage of any Creature
+	 */
+	private static final double CREATURE_DEFENSE_MIN = 0;
+	
+	/*
+	 * Maximum amount of genetic variance between two generations of a Creature
+	 */
+	private static final double CREATURE_VARIANCE_MAX = 1;
+	
+	/*
+	 * Minimum amount of genetic variance between two generations of a Creature
+	 */
+	private static final double CREATURE_VARIANCE_MIN = 0;
+	
+	/*
+	 * Maximum linearVelocity of a creature in pixels / update
+	 */
+	private static final double CREATURE_LINEAR_V_MAX = 10;
+	
+	/*
+	 * Maximum angularVelocity of a creature in degrees / update
+	 */
+	private static final double CREATURE_ANGULAR_V_MAX = 30;
+	
+	/*
+	 * Maximum maxEnergy of a creature
+	 */
+	private static final double CREATURE_MAXENERGY_MAX = 1000;
+	
+	/*
+	 * Minimum maxEnergy of a creature
+	 */
+	private static final double CREATURE_MAXENERGY_MIN = 400;
+	
+	/*
+	 * Minimum energyUseRate per update
+	 */
+	private static final double CREATURE_ENERGY_USE_RATE_MIN = 4;
+	
+	/*
+	 * Energy use rate scaling per pixel of size; energy use rate scales
+	 * linearly with size
+	 */
+	private static final double CREATURE_ENERGY_USE_RATE_SCALING = 0.75;
+	
+	/*
+	 * Health regeneration rate in health per update
+	 */
+	private static final double CREATURE_HEALTH_REGENERATION_RATE = 0.2;
+	
+	/*
+	 * Inherited characteristic fields of a Creature
+	 */
+	private double attack, defense, red, blue, green, size, markerValue, geneticVariance, maxLinearVelocity,
+					visionRed, visionGreen, visionBlue;
+	
+	/*
+	 * Characteristic fields of a Creature which are based off other 
+	 * characteristic fields
+	 */
+	private double maxEnergy, energyUseRate, maxHealth;
+	
+	/*
+	 * Computational fields of a Creature
+	 */
+	private double health, linearVelocity, x, y, angle, angularVelocity, energy;
+	
+	/*
+	 * Neural Network which controls a Creature
+	 */
+	private Network network;
 	
 	/**
-	 * Sets the dimensions for the screen based on the SIZE_X and SIZE_Y
-	 * values, creates a new timer based on the UPDATE_RATE value, and 
-	 * begins the timer.
+	 * Default constructor for creating a new Creature; when a new Creature
+	 * is generated without inheriting data from another Creature, all
+	 * data is randomized to a reasonable degree.
 	 */
-	public JSENNPanel() {
-		this.setPreferredSize(new Dimension(SIZE_X, SIZE_Y));
-		this.setBackground(Color.MAGENTA);  //Magenta stands out,
-											//easy to spot missing texture.
-		timer = new Timer(1000 / UPDATE_RATE, this);
-		timer.start();
-	}
-	
-	/**
-	 * Overrides the JPanel paint method; draws all Tiles and Creatures.
-	 */
-	@Override
-	public void paint(Graphics og) {
-		Graphics2D g = (Graphics2D) og;
-		super.paint(g);
+	public Creature() {
+		attack = Math.random() * (CREATURE_ATTACK_MAX - CREATURE_ATTACK_MIN) + CREATURE_ATTACK_MIN;
+		defense = Math.random() * (CREATURE_DEFENSE_MAX - CREATURE_DEFENSE_MIN) + CREATURE_DEFENSE_MIN;
+		red = Math.random() * 255;
+		blue = Math.random() * 255;
+		green = Math.random() * 255;
+		size = Math.random() * (CREATURE_SIZE_MAX - CREATURE_SIZE_MIN) + CREATURE_SIZE_MIN;
+		markerValue = Math.random() * 100;
+		geneticVariance = Math.random() * (CREATURE_VARIANCE_MAX - CREATURE_VARIANCE_MIN) + CREATURE_VARIANCE_MAX;
+		maxLinearVelocity = Math.random() * CREATURE_LINEAR_V_MAX;
+		
+		maxEnergy = (CREATURE_MAXENERGY_MAX - CREATURE_MAXENERGY_MIN) / (CREATURE_SIZE_MAX - CREATURE_SIZE_MIN) * 
+					(size - CREATURE_SIZE_MIN);
+		energyUseRate = CREATURE_ENERGY_USE_RATE_MIN + CREATURE_ENERGY_USE_RATE_SCALING * size;
+		maxHealth = (CREATURE_MAXHEALTH_MAX - CREATURE_MAXHEALTH_MIN) / (CREATURE_SIZE_MAX - CREATURE_SIZE_MIN) * 
+					(size - CREATURE_SIZE_MIN);
+		
+		health = maxHealth;
+		linearVelocity = 0;
+		x = Math.random() * JSENNPanel.SIZE_X;
+		y = Math.random() * JSENNPanel.SIZE_Y;
+		angle = 0;
+		angularVelocity = 0;
+		energy = maxEnergy;
+		Color startingColor = JSENNPanel.getTileColor(x, y);
+		visionRed = startingColor.getRed();
+		visionGreen = startingColor.getGreen();
+		visionBlue = startingColor.getBlue();
 		
 		/*
-		 * Drawing all tiles
+		 * Currently, all Networks have 3 layers, with the following inputs 
+		 * and outputs: (others will be added later as new features 
+		 * are implemented)
+		 * 
+		 * INPUTS:
+		 * 0 - linearVelocity
+		 * 1 - angle
+		 * 2 - health
+		 * 3 - energy
+		 * 4 - visionRed
+		 * 5 - visionGreen
+		 * 6 - visionBlue
+		 * 7 - memoryA
+		 * 8 - memoryB
+		 * 
+		 * (currently, vision data is just the Tile directly beneath the Creature,
+		 * as vision has not been implemented yet)
+		 * 
+		 * OUTPUTS:
+		 * 0 - angularVelocity
+		 * 1 - linearVelocity
+		 * 2 - eat
+		 * 3 - reproduce
+		 * 4 - memoryA
+		 * 5 - memoryB
 		 */
-		for (int i = 0; i < NUM_TILES_X; i++) {
-			for (int j = 0; j < NUM_TILES_Y; j++) {
-				int left = i * TILE_SIZE;
-				int top = j * TILE_SIZE;
-				g.setPaint(tiles[i][j].getTileColor());
-				g.fillRect(left, top, TILE_SIZE, TILE_SIZE);
-			}
-		}
+		network = new Network(3, new int[] {9, 7, 6});
 		
-		/*
-		 * Drawing all creatures
-		 */
-		for (Creature c : creatures) {
-			g.setPaint(c.getCreatureColor());
-			int size = (int) c.getSize();
-			int x = (int) c.getX();
-			int y = (int) c.getY();
-			g.fillOval(x - size, y - size, size * 2, size * 2);
-			g.setPaint(new Color(0,0,0));
-			g.setStroke(new BasicStroke(2));
-			g.drawOval(x - size - 1, y - size - 1, size * 2 + 2, size * 2 + 2);
-		}
+		Layer inputLayer = network.getInputs();
+		inputLayer.input(new double[]{
+			linearVelocity,
+			angle,
+			health,
+			energy,
+			visionRed,
+			visionGreen,
+			visionBlue,
+			Math.random(),
+			Math.random()
+		});
+		
+		network.transferData();
 	}
 	
 	/**
-	 * Updating all elements and graphics
+	 * Updates all fields of the Creature based on its current position,
+	 * circumstances, and the outputs of its neural network. Based on energy
+	 * and health, if this Creature should survive this update, then this 
+	 * method should make further calculations and have the network 
+	 * recalculate all data, then return true; otherwise, this method should
+	 * return false so that JSENNPanel can remove this Creature.
+	 * @returns true if this creature survives this update, false otherwise.
 	 */
-	@Override
-	public void actionPerformed(ActionEvent e) {
+	public boolean update() {
+		Layer outputLayer = network.getOutputs();
 		
-		repaint();
+		double angularVelocityOutput = Function.sigmoid(outputLayer.get(0).getData(), 1, 2, 0, 0) - 1;
+		angle += CREATURE_ANGULAR_V_MAX * angularVelocityOutput;
+		
+		double linearVelocityOutput = Function.sigmoid(outputLayer.get(1).getData(), 1, 1, 0, 0);
+		linearVelocity = maxLinearVelocity * linearVelocityOutput;
+
+		double energyDecrease = energyUseRate + JSENNPanel.getTileEnergyRate(x, y);
+		
+		x += linearVelocity * Math.cos((Math.PI * angle) / 180);
+		y += linearVelocity * Math.sin((Math.PI * angle) / 180);
+		x = Math.max(x, 0);
+		x = Math.min(x, JSENNPanel.SIZE_X - 1);
+		y = Math.max(y, 0);
+		y = Math.min(y, JSENNPanel.SIZE_Y - 1);
+		
+		health += CREATURE_HEALTH_REGENERATION_RATE;
+		health = Math.min(health, maxHealth);
+		
+		energy += energyDecrease + 
+				((Function.sigmoid(outputLayer.get(2).getData(), 1, 1, 0, 0) > 0.8) ? JSENNPanel.eat(x, y) - 25 : 0);
+		energy = Math.min(energy, maxEnergy);
+		
+		if (energy <= 0 || health <= 0) {
+			return false;
+		}
+		
+		Color tileColor = JSENNPanel.getTileColor(x, y);
+		visionRed = tileColor.getRed();
+		visionGreen = tileColor.getGreen();
+		visionBlue = tileColor.getBlue();
+		
+		double memoryA = Function.sigmoid(outputLayer.get(4).getData(), 1, 1, 0, 0);
+		double memoryB = Function.sigmoid(outputLayer.get(5).getData(), 1, 1, 0, 0);
+		
+		Layer inputLayer = network.getInputs();
+		inputLayer.input(new double[] {
+			linearVelocity,
+			angle,
+			health,
+			energy,
+			visionRed,
+			visionGreen,
+			visionBlue,
+			memoryA,
+			memoryB
+		});
+		
+		network.transferData();
+		
+		return true;
 	}
+	
+	public Color getCreatureColor() {
+		try {
+			return new Color((int) red, (int) green, (int) blue);
+		} catch (Exception e) {
+			System.out.println("Invalid colors: Red: " + red + ", Green: " + green + ", Blue" + blue);
+		}
+		
+		return null;
+	}
+	
+	public double getSize() { return size; }
+	public double getX() { return x; }
+	public double getY() { return y; }
+	
+	/**
+	 * Gets the maximum possible size of any Creature.
+	 * @return the static float CREATURE_SIZE_LIMIT.
+	 */
+	public static double getCreatureSizeMax() { return CREATURE_SIZE_MAX; }
 }
