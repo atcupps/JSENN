@@ -149,6 +149,23 @@ public class Layer {
 	}
 	
 	/**
+	 * Inputs all data in the parameter inputs into the Nodes of this layer in
+	 * the order they appear in inputs. The length of the inputs array must
+	 * match the number of nodes in this Layer.
+	 * @param inputs the data to be input into this Layer in order
+	 * @throws NeuralNetworkException if inputs.length != size
+	 */
+	public void input(double[] inputs) {
+		if (inputs.length != size) {
+			throw new NeuralNetworkException("Input length does not match Layer size.");
+		}
+		
+		for (int i = 0; i < inputs.length; i++) {
+			nodes[i].setData(inputs[i]);
+		}
+	}
+	
+	/**
 	 * Returns false if this Layer is an output layer; otherwise, this method
 	 * will call all Nodes to transfer their data, then returns true.
 	 * @return false if isOutput, true if not
