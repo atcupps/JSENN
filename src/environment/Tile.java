@@ -34,7 +34,7 @@ public class Tile {
 	 * Amount of energy per update required for Creatures to move one pixel
 	 * through a given tile.
 	 */
-	private static final double WATER_ENERGY_USE_RATE = 0.1,
+	private static final double WATER_ENERGY_USE_RATE = 0.05,
 								MOUNTAIN_ENERGY_USE_RATE = 0.08,
 								SOIL_ENERGY_USE_RATE = 0.03;
 	
@@ -44,7 +44,7 @@ public class Tile {
 	 * any tile can have, and the rate that nutrition naturally increases.
 	 */
 	private static final double SOIL_MAX_BASE_NUTRITION = 1000;
-	private static final double SOIL_NUTRITION_RATE = 250;
+	private static final double SOIL_NUTRITION_RATE = 150;
 	private static final double NUTRITION_INCREASE_RATE = 7;
 	
 	/**
