@@ -19,7 +19,7 @@ import neural.Network;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 23 Dec 2022
+ * @version 24 Dec 2022
  */
 public class Creature {
 	
@@ -76,38 +76,38 @@ public class Creature {
 	/*
 	 * Maximum linearVelocity of a creature in pixels / update
 	 */
-	private static final double CREATURE_LINEAR_V_MAX = 5;
+	private static final double CREATURE_LINEAR_V_MAX = 2.5;
 	
 	/*
 	 * Maximum angularVelocity of a creature in degrees / update
 	 */
-	private static final double CREATURE_ANGULAR_V_MAX = 20;
+	private static final double CREATURE_ANGULAR_V_MAX = 90;
 	
 	/*
 	 * Maximum maxEnergy of a creature
 	 */
-	private static final double CREATURE_MAXENERGY_MAX = 600;
+	private static final double CREATURE_MAXENERGY_MAX = 300;
 	
 	/*
 	 * Minimum maxEnergy of a creature
 	 */
-	private static final double CREATURE_MAXENERGY_MIN = 80;
+	private static final double CREATURE_MAXENERGY_MIN = 40;
 	
 	/*
 	 * Minimum energyUseRate per update
 	 */
-	private static final double CREATURE_ENERGY_USE_RATE_MIN = 2.0;
+	private static final double CREATURE_ENERGY_USE_RATE_MIN = 1.0;
 	
 	/*
 	 * Energy use rate scaling per pixel of size; energy use rate scales
 	 * linearly with size
 	 */
-	private static final double CREATURE_ENERGY_USE_RATE_SCALING = 1.25;
+	private static final double CREATURE_ENERGY_USE_RATE_SCALING = 0.625;
 	
 	/*
 	 * Health regeneration rate in health per update
 	 */
-	private static final double CREATURE_HEALTH_REGENERATION_RATE = 0.2;
+	private static final double CREATURE_HEALTH_REGENERATION_RATE = 0.1;
 	
 	/*
 	 * Value of reproduction output in network at which this creature
@@ -130,12 +130,12 @@ public class Creature {
 	/*
 	 * Amount of energy used when a Creature eats
 	 */
-	private static final double CREATURE_EAT_COST = 25;
+	private static final double CREATURE_EAT_COST = 12.5;
 	
 	/*
 	 * The amount of ticks before a creature can reproduce
 	 */
-	private static final int CREATURE_REPRODUCTION_TIME = 600;
+	private static final int CREATURE_REPRODUCTION_TIME = 80;
 	
 	/*
 	 * Maximum distance a Creature can see
@@ -145,7 +145,7 @@ public class Creature {
 	/*
 	 * Inherited characteristic fields of a Creature
 	 */
-	private double attack, defense, red, blue, green, size, markerValue, geneticVariance, maxLinearVelocity;
+	private double attack, defense, red, blue, green, size, markerValue, geneticVariance, maxLinearVelocity, maxAngularVelocity;
 	
 	/*
 	 * Characteristic fields of a Creature which are based off other 
@@ -157,7 +157,8 @@ public class Creature {
 	 * Computational fields of a Creature
 	 */
 	private double health, linearVelocity, x, y, angle, angularVelocity, energy,
-		visionX, visionY, visionRed, visionGreen, visionBlue, visionDistance;
+		visionX, visionY, visionRed, visionGreen, visionBlue, visionDistance,
+		belowRed, belowGreen, belowBlue;
 	private double visionXGraphics, visionYGraphics; //Used only for graphics purposes
 	private int reproductionTimer = CREATURE_REPRODUCTION_TIME;
 	
@@ -181,6 +182,7 @@ public class Creature {
 		markerValue = Math.random() * 100;
 		geneticVariance = Math.random() * (CREATURE_VARIANCE_MAX - CREATURE_VARIANCE_MIN) + CREATURE_VARIANCE_MAX;
 		maxLinearVelocity = Math.random() * CREATURE_LINEAR_V_MAX;
+		maxAngularVelocity = Math.random() * CREATURE_ANGULAR_V_MAX;
 		
 		maxEnergy = (CREATURE_MAXENERGY_MAX - CREATURE_MAXENERGY_MIN) / (CREATURE_SIZE_MAX - CREATURE_SIZE_MIN) * 
 					(size - CREATURE_SIZE_MIN);
@@ -191,19 +193,26 @@ public class Creature {
 		linearVelocity = 0;
 		x = Math.random() * JSENNPanel.SIZE_X;
 		y = Math.random() * JSENNPanel.SIZE_Y;
-		visionX = x;
-		visionY = y;
+		visionX = x + size;
+		visionY = y + size;
 		visionXGraphics = visionX;
 		visionYGraphics = visionY;
-		visionDistance = 0;
-		angle = 0;
+		visionX = (visionX + JSENNPanel.SIZE_X) % JSENNPanel.SIZE_X;
+		visionY = (visionY + JSENNPanel.SIZE_Y) % JSENNPanel.SIZE_Y; 
+		visionDistance = size;
+		angle = Math.random() * 360;
 		angularVelocity = 0;
 		energy = maxEnergy;
 		
-		Color startingColor = JSENNPanel.getTileColor(x, y);
-		visionRed = startingColor.getRed();
-		visionGreen = startingColor.getGreen();
-		visionBlue = startingColor.getBlue();
+		Color belowColor = JSENNPanel.getTileColor(x, y);
+		belowRed = belowColor.getRed();
+		belowGreen = belowColor.getGreen();
+		belowBlue = belowColor.getBlue();
+		
+		Color visionColor = JSENNPanel.getTileColor(visionX, visionY);
+		visionRed = visionColor.getRed();
+		visionGreen = visionColor.getGreen();
+		visionBlue = visionColor.getBlue();
 		
 		/*
 		 * Currently, all Networks have 3 layers, with the following inputs 
@@ -221,6 +230,9 @@ public class Creature {
 		 * 7 - memoryA
 		 * 8 - memoryB
 		 * 9 - visionDistance
+		 * 10 - belowRed
+		 * 11 - belowGreen
+		 * 12 - belowBlue
 		 * 
 		 * (currently, vision data is just the Tile directly beneath the Creature,
 		 * as vision has not been implemented yet)
@@ -234,7 +246,7 @@ public class Creature {
 		 * 5 - memoryB
 		 * 6 - visionDistance
 		 */
-		network = new Network(3, new int[] {10, 8, 7});
+		network = new Network(4, new int[] {13, 9, 9, 7});
 		
 		Layer inputLayer = network.getInputs();
 		inputLayer.input(new double[]{
@@ -247,7 +259,10 @@ public class Creature {
 			visionBlue,
 			Math.random(),
 			Math.random(),
-			visionDistance
+			visionDistance,
+			belowRed,
+			belowGreen,
+			belowBlue
 		});
 		
 		network.transferData();
@@ -278,6 +293,8 @@ public class Creature {
 		geneticVariance = Function.bound(CREATURE_VARIANCE_MIN, CREATURE_VARIANCE_MAX, geneticVariance);
 		maxLinearVelocity = toInherit.maxLinearVelocity + Math.random() * maxVariance * 2 - maxVariance;
 		maxLinearVelocity = Function.bound(0, CREATURE_LINEAR_V_MAX, maxLinearVelocity);
+		maxAngularVelocity = toInherit.maxAngularVelocity + Math.random() * maxVariance * 2 - maxVariance;
+		maxAngularVelocity = Function.bound(0, CREATURE_ANGULAR_V_MAX, maxAngularVelocity);
 		
 		maxEnergy = (CREATURE_MAXENERGY_MAX - CREATURE_MAXENERGY_MIN) / (CREATURE_SIZE_MAX - CREATURE_SIZE_MIN) * 
 				(size - CREATURE_SIZE_MIN);
@@ -291,18 +308,26 @@ public class Creature {
 		y = toInherit.y + Math.random() * 50;
 		x = (x + JSENNPanel.SIZE_X) % JSENNPanel.SIZE_X;
 		y = (y + JSENNPanel.SIZE_Y) % JSENNPanel.SIZE_Y;
-		visionX = x;
-		visionY = y;
+		visionX = x + size;
+		visionY = y + size;
 		visionXGraphics = visionX;
 		visionYGraphics = visionY;
-		angle = 0;
+		visionX = (visionX + JSENNPanel.SIZE_X) % JSENNPanel.SIZE_X;
+		visionY = (visionY + JSENNPanel.SIZE_Y) % JSENNPanel.SIZE_Y; 
+		visionDistance = size;
+		angle = Math.random() * 360;
 		angularVelocity = 0;
-		energy = toInherit.energy / 2;
+		energy = toInherit.energy;
 	
-		Color startingColor = JSENNPanel.getTileColor(x, y);
-		visionRed = startingColor.getRed();
-		visionGreen = startingColor.getGreen();
-		visionBlue = startingColor.getBlue();
+		Color belowColor = JSENNPanel.getTileColor(x, y);
+		belowRed = belowColor.getRed();
+		belowGreen = belowColor.getGreen();
+		belowBlue = belowColor.getBlue();
+		
+		Color visionColor = JSENNPanel.getTileColor(visionX, visionY);
+		visionRed = visionColor.getRed();
+		visionGreen = visionColor.getGreen();
+		visionBlue = visionColor.getBlue();
 		
 		network = new Network(toInherit.network, maxVariance);
 		Layer inputLayer = network.getInputs();
@@ -316,7 +341,10 @@ public class Creature {
 				visionBlue,
 				Math.random(), //memory is randomized at the beginning
 				Math.random(),
-				visionDistance
+				visionDistance,
+				belowRed,
+				belowGreen,
+				belowBlue
 		});
 		network.transferData();
 		
@@ -365,10 +393,10 @@ public class Creature {
 		Layer outputLayer = network.getOutputs();
 		
 		double angularVelocityOutput = Function.sigmoid(outputLayer.get(0).getData(), 1, 2, 0, 0) - 1;
-		angularVelocity = CREATURE_ANGULAR_V_MAX * angularVelocityOutput;
+		angularVelocity = maxAngularVelocity * angularVelocityOutput;
 		angle += angularVelocity;
 		
-		double linearVelocityOutput = Function.sigmoid(outputLayer.get(1).getData(), 1, 1, 0, 0);
+		double linearVelocityOutput = Function.sigmoid(outputLayer.get(1).getData(), 1, 1, 0, 0) - 0;
 		linearVelocity = maxLinearVelocity * linearVelocityOutput;
 
 		double energyDecrease = energyUseRate + JSENNPanel.getTileEnergyRate(x, y) * linearVelocityOutput * size;
@@ -394,6 +422,7 @@ public class Creature {
 		
 		double visionDistanceOutput = Function.sigmoid(outputLayer.get(6).getData(), 1, 1, 0, 0);
 		visionDistance = visionDistanceOutput * CREATURE_MAX_VISION_DISTANCE;
+		visionDistance = Function.bound(size, CREATURE_MAX_VISION_DISTANCE, visionDistance);
 		visionX = x + visionDistance * Math.cos((Math.PI * angle) / 180);
 		visionY = y + visionDistance * Math.sin((Math.PI * angle) / 180);
 		visionXGraphics = visionX;
@@ -401,10 +430,15 @@ public class Creature {
 		visionX = (visionX + JSENNPanel.SIZE_X) % JSENNPanel.SIZE_X;
 		visionY = (visionY + JSENNPanel.SIZE_Y) % JSENNPanel.SIZE_Y; 
 		
-		Color tileColor = JSENNPanel.getTileColor(visionX, visionY);
-		visionRed = tileColor.getRed();
-		visionGreen = tileColor.getGreen();
-		visionBlue = tileColor.getBlue();
+		Color belowColor = JSENNPanel.getTileColor(x, y);
+		belowRed = belowColor.getRed();
+		belowGreen = belowColor.getGreen();
+		belowBlue = belowColor.getBlue();
+		
+		Color visionColor = JSENNPanel.getTileColor(visionX, visionY);
+		visionRed = visionColor.getRed();
+		visionGreen = visionColor.getGreen();
+		visionBlue = visionColor.getBlue();
 		
 		double memoryA = Function.sigmoid(outputLayer.get(4).getData(), 1, 1, 0, 0);
 		double memoryB = Function.sigmoid(outputLayer.get(5).getData(), 1, 1, 0, 0);
@@ -420,7 +454,10 @@ public class Creature {
 			visionBlue,
 			memoryA,
 			memoryB,
-			visionDistance
+			visionDistance,
+			visionRed,
+			visionGreen,
+			visionBlue
 		});
 		
 		network.transferData();
@@ -448,7 +485,8 @@ public class Creature {
 		reproductionTimer = CREATURE_REPRODUCTION_TIME / 2;
 		energy /= 2;
 		health /= 2;
-		return new Creature(this, geneticVariance);
+		// Small chance for larger genetic variation in offspring
+		return new Creature(this, (Math.random() > 0.95) ? Math.sqrt(geneticVariance) + 0.1 : geneticVariance);
 	}
 	
 	public Color getCreatureColor() {
@@ -467,6 +505,8 @@ public class Creature {
 	public double getY() { return y; }
 	public double getVisionXGraphics() { return visionXGraphics; }
 	public double getVisionYGraphics() { return visionYGraphics; }
+	public int getEnergy() { return (int) energy; }
+	public int getHealth() { return (int) health; }
 	
 	/**
 	 * Gets the maximum possible size of any Creature.
