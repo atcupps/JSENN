@@ -53,6 +53,8 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 */
 	private static final int MIN_NUM_CREATURES = 30;
 	
+	private static boolean isPaused = false;
+	
 	/**
 	 * The set of all tiles that will be used in this simulation; size is 
 	 * based on NUM_TILES_X and NUM_TILES_Y, which are based on the size of the
@@ -156,6 +158,10 @@ public class JSENNPanel extends JPanel implements ActionListener {
 											//easy to spot missing texture.
 		timer = new Timer(1000 / UPDATE_RATE, this);
 		timer.start();
+		
+		//Used for debugging visually
+		//Thread inputThread = new Thread(new InputThread());
+		//inputThread.start();
 	}
 	
 	/**
@@ -182,6 +188,9 @@ public class JSENNPanel extends JPanel implements ActionListener {
 		 * Drawing all creatures
 		 */
 		for (Creature c : creatures) {
+			/*
+			 * Drawing Creature bodies
+			 */
 			g.setPaint(c.getCreatureColor());
 			int size = (int) c.getSize();
 			int x = (int) c.getX();
@@ -190,6 +199,16 @@ public class JSENNPanel extends JPanel implements ActionListener {
 			g.setPaint(new Color(0,0,0));
 			g.setStroke(new BasicStroke(2));
 			g.drawOval(x - size - 1, y - size - 1, size * 2 + 2, size * 2 + 2);
+			
+			/*
+			 * Drawing Creature vision
+			 */
+			g.setPaint(Color.BLACK);
+			g.setStroke(new BasicStroke(2));
+			int visionX = (int) c.getVisionXGraphics();
+			int visionY = (int) c.getVisionYGraphics();
+			g.drawLine(x, y, visionX, visionY);
+			g.fillOval(visionX - 2, visionY - 2, 4, 4);
 		}
 	}
 	
@@ -199,34 +218,36 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		/*
-		 * Updating all creatures, and removing some if necessary, or adding
-		 * new ones
-		 */
-		int numCreatures = creatures.size();
-		for (int i = 0; i < numCreatures; i++) {
-			if (!creatures.get(i).update()) { //creature must be removed
-				creatures.remove(i--);
-				numCreatures--;
-			} else {
-				if (creatures.get(i).shouldReproduce()) {
-					creatures.add(creatures.get(i++).reproduce());
-					numCreatures++;
+		if (!isPaused) {
+			/*
+			 * Updating all creatures, and removing some if necessary, or adding
+			 * new ones
+			 */
+			int numCreatures = creatures.size();
+			for (int i = 0; i < numCreatures; i++) {
+				if (!creatures.get(i).update()) { //creature must be removed
+					creatures.remove(i--);
+					numCreatures--;
+				} else {
+					if (creatures.get(i).shouldReproduce()) {
+						creatures.add(creatures.get(i++).reproduce());
+						numCreatures++;
+					}
 				}
 			}
-		}
-		
-		/*
-		 * Updating all Tiles
-		 */
-		for (int i = 0; i < NUM_TILES_X; i++) {
-			for (int j = 0; j < NUM_TILES_Y; j++) {
-				tiles[i][j].update();
+			
+			/*
+			 * Updating all Tiles
+			 */
+			for (int i = 0; i < NUM_TILES_X; i++) {
+				for (int j = 0; j < NUM_TILES_Y; j++) {
+					tiles[i][j].update();
+				}
 			}
-		}
-		
-		while (creatures.size() < MIN_NUM_CREATURES) {
-			creatures.add(new Creature());
+			
+			while (creatures.size() < MIN_NUM_CREATURES) {
+				creatures.add(new Creature());
+			}
 		}
 		
 		
@@ -243,5 +264,9 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	
 	public static Color getTileColor(double x, double y) {
 		return tiles[(int) x / TILE_SIZE][(int) y / TILE_SIZE].getTileColor();
+	}
+	
+	public static void togglePause() { 
+		isPaused = !isPaused;
 	}
 }
