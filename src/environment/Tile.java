@@ -13,7 +13,7 @@ import functions.Function;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 23 Dec 2022
+ * @version 24 Dec 2022
  */
 public class Tile {
 
@@ -45,7 +45,7 @@ public class Tile {
 	 */
 	private static final double SOIL_MAX_BASE_NUTRITION = 1000;
 	private static final double SOIL_NUTRITION_RATE = 150;
-	private static final double NUTRITION_INCREASE_RATE = 7;
+	private static final double NUTRITION_INCREASE_RATE = 2.5;
 	
 	/**
 	 * Inputs for the Function.sigmoid(...) function used to process elevation.
@@ -198,6 +198,10 @@ public class Tile {
 	public double eat() {
 		nutrition /= 2;
 		return nutrition;
+	}
+	
+	public void addNutrition(int amount) {
+		nutrition += amount;
 	}
 	
 	//public Color getTileColor() { return new Color(red, green, blue); }
