@@ -10,7 +10,7 @@ import functions.Function;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 21 Dec 2022
+ * @version 23 Dec 2022
  */
 public class Edge {
 
@@ -22,15 +22,16 @@ public class Edge {
 	/*
 	 * The weight and bias of the current Node
 	 */
-	private double weight, bias;
+	private double scale, weight, bias;
 	
 	/**
 	 * The default constructor for creating a new Edge to a Node; by default, 
-	 * weight and bias are random numbers between -1 and 1. 
+	 * scale, weight and bias are random numbers between -1 and 1. 
 	 * @param nextNode - the destination Node of the Edge
 	 */
 	public Edge(Node nextNode) {
 		next = nextNode;
+		scale = Math.random() * 2 - 1;
 		weight = Math.random() * 2 - 1;
 		bias = Math.random() * 2 - 1;
 	}
@@ -45,6 +46,7 @@ public class Edge {
 	 */
 	public Edge(Node nextNode, Edge toInherit, double maxVariance) {
 		next = nextNode;
+		scale = Function.bound(-1, 1, toInherit.scale + Math.random() * maxVariance * 2 - maxVariance);
 		weight = toInherit.weight + Math.random() * maxVariance * 2 - maxVariance;
 		bias = toInherit.bias + Math.random() * maxVariance * 2 - maxVariance;
 	}
@@ -56,6 +58,6 @@ public class Edge {
 	 * @param data - the data to be transferred to the next Node.
 	 */
 	public void addData(double data) {
-		next.addData(Function.sigmoid(data, weight, 1, bias, 0));
+		next.addData(Function.sigmoid(data, weight, scale, bias, 0));
 	}
 }
