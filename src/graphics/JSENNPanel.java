@@ -25,7 +25,7 @@ import environment.Tile;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 21 Dec 2022
+ * @version 23 Dec 2022
  */
 public class JSENNPanel extends JPanel implements ActionListener {
 	
@@ -37,7 +37,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	/**
 	 * Screen size dimensions in pixels.
 	 */
-	public static final int SIZE_X = 1920, SIZE_Y = 1080;
+	public static final int SIZE_X = 1440, SIZE_Y = 900;
 	/**
 	 * Number of times per second objects should be updated.
 	 */
@@ -47,6 +47,11 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 * Size of tiles in pixels
 	 */
 	private static final int TILE_SIZE = 10;
+	
+	/**
+	 * Minimum number of creatures
+	 */
+	private static final int MIN_NUM_CREATURES = 30;
 	
 	/**
 	 * The set of all tiles that will be used in this simulation; size is 
@@ -66,15 +71,30 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	private final long SEED = (long) (Math.random() * 10000000);
 	private static final double SCALING_FACTOR = 0.03;
 	{
+		/*
+		 * Creating non-border Tiles
+		 */
 		double i = 0.01, j = 0.01;
-		for (int xIndex = 0; xIndex < NUM_TILES_X; xIndex++) {
-			for (int yIndex = 0; yIndex < NUM_TILES_Y; yIndex++) {
+		for (int xIndex = 1; xIndex < NUM_TILES_X - 1; xIndex++) {
+			for (int yIndex = 1; yIndex < NUM_TILES_Y - 1; yIndex++) {
 				float noiseValue = OpenSimplex2S.noise2(SEED, i, j);
 				tiles[xIndex][yIndex] = new Tile(noiseValue + 0.5);
 				j += SCALING_FACTOR;
 			}
 			j = 0.01;
 			i += SCALING_FACTOR;
+		}
+		
+		/*
+		 * Creating border Tiles
+		 */
+		for (int xIndex = 0; xIndex < NUM_TILES_X; xIndex++) {
+			tiles[xIndex][0] = new Tile(true);
+			tiles[xIndex][NUM_TILES_Y - 1] = new Tile(true);
+		}
+		for (int yIndex = 0; yIndex < NUM_TILES_Y; yIndex++) {
+			tiles[0][yIndex] = new Tile(true);
+			tiles[NUM_TILES_X - 1][yIndex] = new Tile(true);
 		}
 	}
 	
@@ -180,13 +200,19 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		
 		/*
-		 * Updating all creatures, and removing some if necessary
+		 * Updating all creatures, and removing some if necessary, or adding
+		 * new ones
 		 */
 		int numCreatures = creatures.size();
 		for (int i = 0; i < numCreatures; i++) {
-			if (!creatures.get(i).update()) {
+			if (!creatures.get(i).update()) { //creature must be removed
 				creatures.remove(i--);
 				numCreatures--;
+			} else {
+				if (creatures.get(i).shouldReproduce()) {
+					creatures.add(creatures.get(i++).reproduce());
+					numCreatures++;
+				}
 			}
 		}
 		
@@ -199,7 +225,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 			}
 		}
 		
-		while (creatures.size() < 60) {
+		while (creatures.size() < MIN_NUM_CREATURES) {
 			creatures.add(new Creature());
 		}
 		
