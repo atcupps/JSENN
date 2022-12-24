@@ -7,7 +7,7 @@ package functions;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 21 Dec 2022
+ * @version 23 Dec 2022
  */
 public class Function {
 
@@ -25,5 +25,21 @@ public class Function {
 	 */
 	public static double sigmoid(double value, double xScale, double yScale, double xShift, double yShift) {
 		return yScale / (1 + Math.exp(-1 * (xScale * value - xShift))) + yShift;
+	}
+	
+	/**
+	 * Returns the given parameter value within the upper and lower bounds; so,
+	 * if the value is greater than upper bound, this method will return the
+	 * upper bound, and if it is less than lower bound, this method will return
+	 * the lower bound.
+	 * @param upperBound the upper bound that the value can be
+	 * @param lowerBound the lower bound that the value can be
+	 * @param value the value to be bound within the upper and lower bounds
+	 * @return the value bounded within the upper and lower bounds
+	 */
+	public static double bound(double lowerBound, double upperBound, double value) {
+		value = Math.min(upperBound, value);
+		value = Math.max(lowerBound, value);
+		return value;
 	}
 }
