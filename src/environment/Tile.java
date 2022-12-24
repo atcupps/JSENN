@@ -13,7 +13,7 @@ import functions.Function;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 21 Dec 2022
+ * @version 23 Dec 2022
  */
 public class Tile {
 
@@ -34,9 +34,9 @@ public class Tile {
 	 * Amount of energy per update required for Creatures to move one pixel
 	 * through a given tile.
 	 */
-	private static final double WATER_ENERGY_USE_RATE = 1.0,
-								MOUNTAIN_ENERGY_USE_RATE = 0.8,
-								SOIL_ENERGY_USE_RATE = 0.3;
+	private static final double WATER_ENERGY_USE_RATE = 0.1,
+								MOUNTAIN_ENERGY_USE_RATE = 0.08,
+								SOIL_ENERGY_USE_RATE = 0.03;
 	
 	/**
 	 * Maximum base nutrition of a soil tile, and the rate at which base
@@ -45,8 +45,7 @@ public class Tile {
 	 */
 	private static final double SOIL_MAX_BASE_NUTRITION = 1000;
 	private static final double SOIL_NUTRITION_RATE = 250;
-	private static final double MAX_NUTRITION = 1000;
-	private static final double NUTRITION_INCREASE_RATE = 1.5;
+	private static final double NUTRITION_INCREASE_RATE = 7;
 	
 	/**
 	 * Inputs for the Function.sigmoid(...) function used to process elevation.
@@ -55,6 +54,27 @@ public class Tile {
 								SIGMOID_SHIFT_Y = 0.0, 
 								SIGMOID_SCALE_X = 2.0,
 								SIGMOID_SCALE_Y = 1.0;
+	
+	/**
+	 * Constructor for Tiles which outline the Simulation as a border; since
+	 * Creature can move across the edge of the screen and appear on the other
+	 * edge, this allows Creatures to know that the terrain soon ahead does not
+	 * match the terrain near them in relation to the generated noise pattern.
+	 * @param isBorderTile
+	 */
+	public Tile(boolean isBorderTile) {
+		elevation = 0;
+		baseNutrition = 0;
+		baseRed = 0;
+		baseGreen = 0;
+		baseBlue = 0;
+		nutrition = baseNutrition;
+		energyUse = (float) SOIL_ENERGY_USE_RATE;
+		red = (int) baseRed;
+		green = (int) baseGreen;
+		blue = (int) baseBlue;
+		tileType = TileType.BORDER;
+	}
 	
 	/**
 	 * Assigns the parameter elevation to the elevation field, then calculates
@@ -113,6 +133,7 @@ public class Tile {
 			
 		default:
 			baseNutrition = (float) (SOIL_MAX_BASE_NUTRITION - SOIL_NUTRITION_RATE * elevation);
+			baseNutrition = (float) Math.max(0, SOIL_MAX_BASE_NUTRITION);
 			nutrition = baseNutrition;
 			energyUse = (float) SOIL_ENERGY_USE_RATE;
 			baseRed = 16 + (170 / (float) (MOUNTAIN_ELEVATION - WATER_ELEVATION)) 
@@ -134,16 +155,18 @@ public class Tile {
 		
 		if (tileType == TileType.SOIL) {
 			/*
-			 * Updating nutrition
+			 * Updating nutrition; as elevation increases, the rate of nutrition
+			 * increase decreases
 			 */
-			nutrition = (float) Math.min(baseNutrition, nutrition + NUTRITION_INCREASE_RATE);
+			nutrition = (float) Math.min(baseNutrition, nutrition + 
+					NUTRITION_INCREASE_RATE * Math.sqrt(MOUNTAIN_ELEVATION - elevation));
 		}
 		
 		/*
 		 * Updating colors
 		 */
 		float nutritionDifference = nutrition - baseNutrition;
-		red = (int) (baseRed + 0.05 * nutritionDifference);
+		red = (int) (baseRed - 0.05 * nutritionDifference);
 		green = (int) (baseGreen + 0.05 * nutritionDifference);
 		blue = (int) (baseBlue + 0.05 * nutritionDifference);
 		
@@ -153,7 +176,7 @@ public class Tile {
 	}
 	
 	public enum TileType {
-		SOIL, MOUNTAIN, WATER;
+		SOIL, MOUNTAIN, WATER, BORDER;
 	}
 	
 	/**
