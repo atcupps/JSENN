@@ -9,7 +9,7 @@ package neural;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 21 Dec 2022
+ * @version 23 Dec 2022
  */
 public class Network {
 
@@ -83,7 +83,7 @@ public class Network {
 		
 		layers[numLayers - 1] = new Layer(toInherit.layers[numLayers - 1], maxVariance);
 		
-		for (int i = numLayers - 2; i >= 0; i++) {
+		for (int i = numLayers - 2; i >= 0; i--) {
 			layers[i] = new Layer(toInherit.layers[i], layers[i+1], maxVariance);
 		}
 	}
