@@ -25,7 +25,7 @@ import environment.Tile;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 23 Dec 2022
+ * @version 24 Dec 2022
  */
 public class JSENNPanel extends JPanel implements ActionListener {
 	
@@ -46,7 +46,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	/**
 	 * Size of tiles in pixels
 	 */
-	private static final int TILE_SIZE = 10;
+	private static final int TILE_SIZE = 15;
 	
 	/**
 	 * Minimum number of creatures
@@ -226,6 +226,15 @@ public class JSENNPanel extends JPanel implements ActionListener {
 			int numCreatures = creatures.size();
 			for (int i = 0; i < numCreatures; i++) {
 				if (!creatures.get(i).update()) { //creature must be removed
+					
+					// Adding Creature energy back to soil
+					int x = (int) creatures.get(i).getX();
+					int y = (int) creatures.get(i).getY();
+					int energy = creatures.get(i).getEnergy() / 10;
+					tiles[x / TILE_SIZE][y / TILE_SIZE].addNutrition(energy);
+					int health = creatures.get(i).getHealth();
+					tiles[x / TILE_SIZE][y / TILE_SIZE].addNutrition(health);
+					
 					creatures.remove(i--);
 					numCreatures--;
 				} else {
