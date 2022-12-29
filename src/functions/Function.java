@@ -7,7 +7,7 @@ package functions;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 23 Dec 2022
+ * @version 29 Dec 2022
  */
 public class Function {
 
@@ -41,5 +41,19 @@ public class Function {
 		value = Math.min(upperBound, value);
 		value = Math.max(lowerBound, value);
 		return value;
+	}
+	
+	/**
+	 * Returns the distance between two points as represented by the length of
+	 * the hypotenuse of a right triangle where the two points (x1, y1) and
+	 * (x2, y2) are the vertices of the hypotenuse.
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 * @return the distance between (x1, y1) and (x2, y2).
+	 */
+	public static double getDistance(double x1, double y1, double x2, double y2) {
+		return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 	}
 }
