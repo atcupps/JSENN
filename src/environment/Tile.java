@@ -13,11 +13,11 @@ import functions.Function;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 24 Dec 2022
+ * @version 29 Dec 2022
  */
 public class Tile {
 
-	private float elevation, baseNutrition, baseRed, baseGreen, baseBlue,
+	private double elevation, baseNutrition, baseRed, baseGreen, baseBlue,
 								nutrition, energyUse;
 	private int red, green, blue;
 	private TileType tileType;
@@ -36,7 +36,7 @@ public class Tile {
 	 */
 	private static final double WATER_ENERGY_USE_RATE = 0.05,
 								MOUNTAIN_ENERGY_USE_RATE = 0.08,
-								SOIL_ENERGY_USE_RATE = 0.03;
+								SOIL_ENERGY_USE_RATE = 0.02;
 	
 	/**
 	 * Maximum base nutrition of a soil tile, and the rate at which base
@@ -45,7 +45,7 @@ public class Tile {
 	 */
 	private static final double SOIL_MAX_BASE_NUTRITION = 1000;
 	private static final double SOIL_NUTRITION_RATE = 150;
-	private static final double NUTRITION_INCREASE_RATE = 2.5;
+	private static final double NUTRITION_INCREASE_RATE = 3.5;
 	
 	/**
 	 * Inputs for the Function.sigmoid(...) function used to process elevation.
@@ -158,21 +158,22 @@ public class Tile {
 			 * Updating nutrition; as elevation increases, the rate of nutrition
 			 * increase decreases
 			 */
-			nutrition = (float) Math.min(baseNutrition, nutrition + 
-					NUTRITION_INCREASE_RATE * Math.sqrt(MOUNTAIN_ELEVATION - elevation));
+			if (nutrition < baseNutrition) {
+				nutrition += NUTRITION_INCREASE_RATE * Math.sqrt(MOUNTAIN_ELEVATION - elevation);
+			}
 		}
 		
 		/*
 		 * Updating colors
 		 */
-		float nutritionDifference = nutrition - baseNutrition;
+		double nutritionDifference = nutrition - baseNutrition;
 		red = (int) (baseRed - 0.05 * nutritionDifference);
 		green = (int) (baseGreen + 0.05 * nutritionDifference);
 		blue = (int) (baseBlue + 0.05 * nutritionDifference);
 		
-		red = Math.max(red, 0);
-		green = Math.max(green, 0);
-		blue = Math.max(blue, 0);
+		red = (int) Function.bound(0, 255, red);
+		green = (int) Function.bound(0, 255, green);
+		blue = (int) Function.bound(0, 255, blue);
 	}
 	
 	public enum TileType {
@@ -200,8 +201,12 @@ public class Tile {
 		return nutrition;
 	}
 	
-	public void addNutrition(int amount) {
+	public void addNutrition(double amount) {
 		nutrition += amount;
+	}
+	
+	public boolean isSoil() {
+		return tileType == TileType.SOIL;
 	}
 	
 	//public Color getTileColor() { return new Color(red, green, blue); }
