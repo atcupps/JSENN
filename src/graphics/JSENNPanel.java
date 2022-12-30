@@ -25,7 +25,7 @@ import environment.Tile;
  * Copyright (C) 2022 Andrew Cupps, CC BY 4.0
  * 
  * @author Andrew Cupps
- * @version 24 Dec 2022
+ * @version 29 Dec 2022
  */
 public class JSENNPanel extends JPanel implements ActionListener {
 	
@@ -72,6 +72,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 */
 	private final long SEED = (long) (Math.random() * 10000000);
 	private static final double SCALING_FACTOR = 0.03;
+	private int numMovements = 0;
 	{
 		/*
 		 * Creating non-border Tiles
@@ -147,6 +148,20 @@ public class JSENNPanel extends JPanel implements ActionListener {
 		}
 	}
 	
+	/*
+	 * For simulation of changing conditions
+	 */
+	private static final boolean CHANGING_NUTRITION = false;
+	private int time = 0;
+	private static final double TOTAL_CHANGE_AMOUNT = 100;
+	private static final double CHANGE_RATE_MODIFIER = 0.001;
+	
+	/*
+	 * For simulation of moving terrain
+	 */
+	private static final boolean CHANGING_TERRAIN = false;
+	private static final int TIME_BETWEEN_CHANGES = 600;
+	
 	/**
 	 * Sets the dimensions for the screen based on the SIZE_X and SIZE_Y
 	 * values, creates a new timer based on the UPDATE_RATE value, and 
@@ -218,6 +233,8 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
+		time++;
+		
 		if (!isPaused) {
 			/*
 			 * Updating all creatures, and removing some if necessary, or adding
@@ -251,7 +268,27 @@ public class JSENNPanel extends JPanel implements ActionListener {
 			for (int i = 0; i < NUM_TILES_X; i++) {
 				for (int j = 0; j < NUM_TILES_Y; j++) {
 					tiles[i][j].update();
+					if (CHANGING_NUTRITION && tiles[i][j].isSoil()) {
+						tiles[i][j].addNutrition(TOTAL_CHANGE_AMOUNT * 
+								CHANGE_RATE_MODIFIER * Math.cos(time * CHANGE_RATE_MODIFIER));
+					}
 				}
+			}
+			
+			/*
+			 * Updating tiles for moving terrain
+			 */
+			if (CHANGING_TERRAIN && time % TIME_BETWEEN_CHANGES == 0) {
+				for (int i = 1; i < NUM_TILES_X - 1; i++) {
+					for (int j = 2; j < NUM_TILES_Y - 1; j++) {
+						tiles[i][j-1] = tiles[i][j];
+					}
+				}
+				for (int i = 1; i < NUM_TILES_X - 1; i++) {
+					float noiseValue = OpenSimplex2S.noise2(SEED, 0.01 + SCALING_FACTOR * (i - 1), (NUM_TILES_Y - 2 + numMovements) * SCALING_FACTOR + 0.01);
+					tiles[i][NUM_TILES_Y - 2] = new Tile(noiseValue + 0.5);
+				}
+				numMovements++;
 			}
 			
 			while (creatures.size() < MIN_NUM_CREATURES) {
