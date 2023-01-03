@@ -36,7 +36,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	private static Timer timer;
 		
 	/**
-	 * Screen size dimensions in pixels. Default is 1920 by 1080.
+	 * Screen size dimensions in pixels; automatically fits to machine's screen size.
 	 */
 	private static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	public static int SIZE_X = (int) screenSize.getWidth(), SIZE_Y = (int) screenSize.getHeight();
