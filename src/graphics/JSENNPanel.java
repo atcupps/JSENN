@@ -37,7 +37,7 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	/**
 	 * Screen size dimensions in pixels.
 	 */
-	public static final int SIZE_X = 1440, SIZE_Y = 900;
+	public static final int SIZE_X = 1920, SIZE_Y = 1080;
 	/**
 	 * Number of times per second objects should be updated.
 	 */
