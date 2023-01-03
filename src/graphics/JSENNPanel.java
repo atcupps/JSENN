@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -33,11 +34,12 @@ public class JSENNPanel extends JPanel implements ActionListener {
 	 * Timer used for updating all objects necessary to update.
 	 */
 	private static Timer timer;
-	
+		
 	/**
-	 * Screen size dimensions in pixels.
+	 * Screen size dimensions in pixels. Default is 1920 by 1080.
 	 */
-	public static final int SIZE_X = 1920, SIZE_Y = 1080;
+	private static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+	public static int SIZE_X = (int) screenSize.getWidth(), SIZE_Y = (int) screenSize.getHeight();
 	/**
 	 * Number of times per second objects should be updated.
 	 */
